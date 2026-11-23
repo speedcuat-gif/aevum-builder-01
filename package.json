@@ -1,0 +1,23 @@
+{
+  "name": "aevum-builder-01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "node scripts/compile.mjs",
+    "demo": "node scripts/demo-flow.mjs --rpc http://127.0.0.1:8545 --local",
+    "serve": "node scripts/serve.mjs 8080",
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "ethers": "^6.17.0",
+    "solc": "^0.8.39"
+  },
+  "devDependencies": {
+    "hardhat": "^2.29.2"
+  }
+}
