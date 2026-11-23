@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayLink — escrowed invoices in tUSD8 on Aevum</title>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --line:#30363d; --text:#e6edf3; --muted:#8b949e; --acc:#2f81f7; --ok:#3fb950; --warn:#d29922; --bad:#f85149; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--line); flex-wrap:wrap; gap:12px; }
+  h1 { font-size:20px; margin:0; }
+  h1 small { color:var(--muted); font-weight:400; }
+  main { max-width:960px; margin:0 auto; padding:24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:20px; }
+  .card h2 { margin:0 0 12px; font-size:17px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
+  input, select, textarea { width:100%; padding:10px 12px; background:#0d1117; color:var(--text); border:1px solid var(--line); border-radius:8px; font:inherit; }
+  button { padding:10px 16px; border-radius:8px; border:1px solid var(--line); background:#21262d; color:var(--text); font:inherit; cursor:pointer; }
+  button.primary { background:var(--acc); border-color:var(--acc); color:#fff; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  button:hover:not(:disabled) { filter:brightness(1.15); }
+  .muted { color:var(--muted); font-size:14px; }
+  .mono { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; word-break:break-all; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:13px; border:1px solid var(--line); }
+  .b-created { color:var(--acc); } .b-paid { color:var(--warn); } .b-disputed { color:var(--bad); }
+  .b-released { color:var(--ok); } .b-refunded { color:var(--muted); } .b-cancelled { color:var(--muted); }
+  .invoice { border-top:1px solid var(--line); padding:14px 0; }
+  .invoice:first-of-type { border-top:0; }
+  .log { max-height:220px; overflow:auto; font-size:13px; }
+  .log div { padding:4px 0; border-bottom:1px solid #21262d; }
+  .log a { color:var(--acc); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:700px){ .grid2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>PayLink <small>escrowed invoices in tUSD8 · Aevum testnet</small></h1>
+  <div class="row">
+    <span id="net" class="muted">not connected</span>
+    <button id="connectBtn" class="primary">Connect wallet</button>
+  </div>
+</header>
+<main>
+  <div class="card">
+    <h2>How it works</h2>
+    <p class="muted">A merchant creates an invoice. The buyer pays tUSD8 into escrow. Funds release
+    when the buyer confirms delivery — or to the merchant after 7 days with no confirmation.
+    The merchant can refund any time before release; the buyer can open a dispute.
+    Pay with a normal approval, a one-transaction EIP-2612 permit, or gaslessly:
+    an agent can submit your EIP-3009 signature (<span class="mono">scripts/agent-pay.mjs</span>).</p>
+    <p class="muted">Contract: <span class="mono" id="contractAddr">—</span>
+    · Token: <span class="mono" id="tokenAddr">—</span>
+    · <a href="https://explorer-test.qday.info" target="_blank" rel="noopener">Aevum explorer</a></p>
+    <p class="muted">Balances — tQDAY: <b id="balNative">—</b> · tUSD8: <b id="balToken">—</b></p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Create invoice</h2>
+      <label>Payee (merchant) address</label>
+      <input id="payee" placeholder="0x…">
+      <label>Amount (tUSD8)</label>
+      <input id="amount" type="number" min="0" step="0.000001" placeholder="e.g. 5">
+      <label>Memo</label>
+      <input id="memo" placeholder="e.g. Logo design — invoice #1">
+      <label>Pay-by deadline (days from now)</label>
+      <input id="expiryDays" type="number" min="1" max="30" value="7">
+      <div class="row" style="margin-top:14px"><button id="createBtn" class="primary">Create invoice</button></div>
+      <p class="muted" id="createStatus"></p>
+    </div>
+
+    <div class="card">
+      <h2>Find invoice</h2>
+      <label>Invoice ID</label>
+      <div class="row"><input id="lookupId" type="number" min="1" value="1"><button id="lookupBtn">Load</button></div>
+      <p class="muted">Or load every invoice from the contract events:</p>
+      <div class="row"><button id="listBtn">List all invoices</button></div>
+      <p class="muted" id="listStatus"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Invoices</h2>
+    <div id="invoices"><p class="muted">No invoices loaded yet.</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Activity</h2>
+    <div class="log" id="log"></div>
+  </div>
+</main>
+<script type="importmap">{"imports":{"ethers":"https://cdn.jsdelivr.net/npm/ethers@6.17.0/+esm"}}</script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
